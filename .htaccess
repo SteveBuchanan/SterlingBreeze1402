@@ -1,0 +1,46 @@
+# Sterling Breeze 1402: Apache / LiteSpeed settings for GoDaddy cPanel.
+# Every block is wrapped in <IfModule> so a missing module can't cause a 500 error.
+
+DirectoryIndex index.html
+Options -Indexes
+
+# Block private and project files if one is ever uploaded by mistake.
+<FilesMatch "(\.(md|env|local|log|bak|zip|tmp|ini|sh)|~|-config(\.example)?\.php)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# Only the endpoint itself may run under api/ (blocks direct requests to api/lib/*).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^api/lib/ - [F,L]
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType text/javascript .js
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# Caching: photos rarely change; HTML, CSS and JS are re-checked often so updates show up.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 hour"
+  ExpiresByType text/javascript "access plus 1 hour"
+  ExpiresByType application/javascript "access plus 1 hour"
+  ExpiresByType image/webp "access plus 30 days"
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript text/calendar text/plain image/svg+xml
+</IfModule>

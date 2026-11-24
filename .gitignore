@@ -424,3 +424,15 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# ---------------------------------------------------------------------------
+# Sterling Breeze 1402 site
+# ---------------------------------------------------------------------------
+# Secret VRBO iCal feed URL (exposes guest names): never commit
+.env.local
+.env*.local
+sterlingbreeze1402-config.php
+# Build output (npm run package)
+dist/
+# macOS
+.DS_Store
