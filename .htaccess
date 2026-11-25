@@ -30,15 +30,22 @@ Options -Indexes
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
-# Caching: photos rarely change; HTML, CSS and JS are re-checked often so updates show up.
+# Caching: photos are kept for 30 days. HTML, CSS and JS are re-checked with the server on
+# every visit ("no-cache" = may store, but must revalidate), so a new upload shows up at once.
+# Unchanged files cost only a tiny "304 Not Modified" reply.
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresDefault "access plus 1 hour"
   ExpiresByType text/html "access plus 0 seconds"
-  ExpiresByType text/css "access plus 1 hour"
-  ExpiresByType text/javascript "access plus 1 hour"
-  ExpiresByType application/javascript "access plus 1 hour"
+  ExpiresByType text/css "access plus 0 seconds"
+  ExpiresByType text/javascript "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType image/webp "access plus 30 days"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|css|js)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
 </IfModule>
 
 <IfModule mod_deflate.c>

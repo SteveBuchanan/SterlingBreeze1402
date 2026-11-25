@@ -13,6 +13,6 @@ export const CALENDAR_MONTHS_AHEAD = 18;
 // js/contact.js assembles them at runtime.
 export const CONTACT = {
   name: ['Kirk', 'Boston'],
-  phone: ['615', '645', '7310'],
+  phone: ['423', '645', '7310'],
   email: { user: ['kboston'], domain: ['bledsoe', 'net'] },
 };

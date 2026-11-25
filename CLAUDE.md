@@ -45,6 +45,8 @@ npm run package             # build CSS, then dist/site/ + dist/site.zip with on
 2. One-time: copy `sterlingbreeze1402-config.example.php` to the cPanel **home folder** (above `public_html`) as `sterlingbreeze1402-config.php` with the real feed URL.
 3. Check `https://<domain>/api/availability.php` returns ICS with `SUMMARY:Unavailable` only.
 
+**Caching (keep when reusing this project for another site):** `.htaccess` sends `Cache-Control: no-cache` for `.html/.css/.js` (plus `mod_expires` 0 seconds), so browsers revalidate on every visit (cheap 304s) and every upload is live on the next load. ES module imports (`./config.js` etc.) carry no version string, so without this rule browsers serve stale scripts after a deploy. Don't raise those lifetimes or rely on hard refreshes. `.webp` photos are cached 30 days: replace a photo by giving it a new file name, never by overwriting. The dev server already sends `no-cache`.
+
 `scripts/package.mjs` has an allowlist of public files (`index.html`, `css`, `js`, `Images`, `api`, `.htaccess`). Never upload the `*.md` files, `.env.local`, tests or `node_modules`; add new public folders to that list.
 
 ## Architecture

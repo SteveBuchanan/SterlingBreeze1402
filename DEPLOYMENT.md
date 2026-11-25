@@ -157,7 +157,7 @@ This creates `dist/site.zip`, which contains only the files the public website n
 | `js/` | Gallery, calendar, contact and menu scripts |
 | `Images/` | Photos |
 | `api/` | The PHP calendar file |
-| `.htaccess` | Server settings: blocks private files, caches photos |
+| `.htaccess` | Server settings: blocks private files, caches photos, makes browsers re-check the page, styles and scripts on every visit |
 
 Project notes and private files (`CLAUDE.md`, `Contact.md`, `RentalUnitDetails.md`, `.env.local`, tests, `node_modules`) are **never** included.
 
@@ -191,7 +191,15 @@ Extracting replaces files but doesn't delete old ones. If a file or photo has be
 
 1. **Calendar:** open `https://<your-domain>/api/availability.php`. You should see a list of dates in which every entry says `SUMMARY:Unavailable` and no guest names appear. If you get an error instead, run the setup check (`?diagnose=1`, see "Checking the settings file").
 2. **Site:** open `https://<your-domain>/`, scroll to **Availability**, and confirm booked dates appear.
-3. **Changes not showing?** Browsers keep styles and scripts for up to an hour. Do a hard refresh (`Cmd+Shift+R` on Mac, `Ctrl+F5` on Windows).
+3. **Changes not showing?** Open the changed file directly (for example `https://<your-domain>/js/config.js`). If it's still old, the extract didn't replace it: delete that file in File Manager and upload it again. If it's new but the page isn't, do one hard refresh (`Cmd+Shift+R` on Mac, `Ctrl+F5` on Windows).
+
+### How updates reach visitors (caching)
+
+`.htaccess` tells browsers to re-check `index.html`, the styles (`.css`) and the scripts (`.js`) with the server on every visit (`Cache-Control: no-cache`). If a file hasn't changed, the server sends a tiny "not modified" reply, so the site stays fast, and a new upload appears on the next page load without anyone needing a hard refresh.
+
+Photos (`.webp`) are kept by browsers for 30 days because they're large and rarely change. To replace a photo, give the new one a **new file name** (and update `js/gallery-data.js`) rather than overwriting the old file, or visitors may see the old photo for up to a month.
+
+**Reusing this project for another site:** copy `.htaccess` along with the scripts. This caching block is what makes updates show up immediately.
 
 ## Updating content
 
@@ -231,4 +239,5 @@ Opening `index.html` by double-clicking it won't work: the scripts and calendar 
 | "500 Internal Server Error" on every page | The host rejected a setting in `.htaccess` | Rename `.htaccess` to `.htaccess-off` to confirm, then contact GoDaddy support or ask to have the setting removed. |
 | Odd redirects or errors only on this site, when other sites share `public_html` | An `.htaccess` file directly in `public_html` (from another site) also applies to subfolders | Check that file's rules, or ask GoDaddy support to exclude this site's folder. |
 | Photos missing on the live site, but fine on the Mac | Folder name case | It must be `Images` (capital I), not `images`. |
-| Old version still showing | Browser cache | Hard refresh (`Cmd+Shift+R`). |
+| Old version still showing | Old file still on the server, or the browser cached it before the caching rules were added | Open the file's address directly (e.g. `/js/config.js`). Old there: re-upload it. New there: hard refresh (`Cmd+Shift+R`) once. |
+| Old photo still showing after replacing it | Photos are cached for 30 days | Use a new file name for the replacement photo (see "How updates reach visitors"). |
