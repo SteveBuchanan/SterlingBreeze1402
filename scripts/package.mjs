@@ -23,7 +23,6 @@ for (const entry of PUBLIC) {
   if (!existsSync(from)) throw new Error(`Missing public file or folder: ${entry}`);
   cpSync(from, join(SITE, entry), {
     recursive: true,
-    preserveTimestamps: true, // so `npm run deploy` (rsync) only uploads files that really changed
     filter: (src) => {
       const name = basename(src);
       if (BLOCKED.test(name)) {

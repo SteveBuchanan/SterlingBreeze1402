@@ -10,10 +10,7 @@
     "dev:php": "node scripts/dev-php.mjs",
     "test": "node --test \"tests/**/*.test.js\"",
     "test:php": "docker run --rm -v \"$PWD\":/app -w /app php:8.3-cli php tests/ics_test.php",
-    "package": "npm run build && node scripts/package.mjs",
-    "deploy": "node scripts/deploy.mjs",
-    "hooks:install": "git config core.hooksPath scripts/git-hooks && echo 'Pushing main now also deploys the site. Undo: npm run hooks:uninstall'",
-    "hooks:uninstall": "git config --unset core.hooksPath && echo 'Pushing no longer deploys.'"
+    "package": "npm run build && node scripts/package.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.5",

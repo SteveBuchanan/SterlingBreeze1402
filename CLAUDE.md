@@ -33,8 +33,6 @@ npm test                    # node:test unit tests for js/ics.js (tests/*.test.j
 node --test --test-name-pattern="sanitized" "tests/**/*.test.js"   # single test
 npm run test:php            # PHP tests for api/lib/ics.php (tests/ics_test.php) via Docker
 npm run package             # build CSS, then dist/site/ + dist/site.zip with only the public files
-npm run deploy              # checks + tests + package, then rsync dist/site/ to GoDaddy over SSH (--dry-run, --prune, --allow-dirty)
-npm run hooks:install       # opt-in pre-push hook: pushing main runs npm run deploy (SKIP_DEPLOY=1 to skip)
 ```
 
 `css/styles.css` is generated but committed. Opening `index.html` from disk (`file://`) won't work: ES modules and the calendar fetch need a server.
@@ -43,8 +41,7 @@ npm run hooks:install       # opt-in pre-push hook: pushing main runs npm run de
 
 `DEPLOYMENT.md` is the owner-facing guide (why PHP, setup, publishing, troubleshooting). Update it whenever deploy steps, public files or config locations change. Summary:
 
-1. `npm run deploy` (`scripts/deploy.mjs`): refuses uncommitted public files or a stale committed `css/styles.css`, runs tests and `npm run package`, then rsyncs `dist/site/` over SSH (no stored password; settings `DEPLOY_HOST`/`DEPLOY_USER`/`DEPLOY_PATH`/`DEPLOY_SITE_URL` in `.env.local`) and checks the live calendar is sanitized. No `--delete` on the document root (other sites may live in it); `--prune` deletes only inside `css`/`js`/`Images`/`api`. `package.mjs` preserves timestamps so rsync skips unchanged photos. macOS ships openrsync: keep rsync flags to what it supports (e.g. symbolic `--chmod`). `scripts/git-hooks/pre-push` (opt-in via `core.hooksPath`) runs it when `main` is pushed.
-   Manual fallback: `npm run package`, then in cPanel File Manager upload `dist/site.zip` into the document root and Extract.
+1. `npm run package`, then in cPanel File Manager upload `dist/site.zip` into `public_html` and Extract.
 2. One-time: copy `sterlingbreeze1402-config.example.php` to the cPanel **home folder** (above `public_html`) as `sterlingbreeze1402-config.php` with the real feed URL.
 3. Check `https://<domain>/api/availability.php` returns ICS with `SUMMARY:Unavailable` only.
 
