@@ -9,10 +9,12 @@ Nearby area: Near Pier Park and Russell-Fields Pier on the Gulf Coast.
 
 ## Rental Condo Information
 Unit 1402 - 14th Floor
+2 Bedroom Unit
 Sleeps 8
-Master Suite with full bath
+Master King Suite with full bath
+2nd bedroom - queen size bed
 Bunk area - Two bunks
-Pull out sleeper sofa
+Pull out queen sleeper sofa
 Second full bath
 Full Kitchen
 Washer and Dryer

@@ -137,7 +137,80 @@ home folder/
 
 Each site's 60-second cache is named after its own VRBO link, so the sites never share cached data.
 
-## Publishing the site (every update)
+## Publishing from the Mac (recommended)
+
+One command checks the project, builds it and uploads only the changed files straight into the site's folder on GoDaddy:
+
+```sh
+npm run deploy
+```
+
+You can also have it run automatically every time `main` is pushed (see "Publish on every push" below). It uses **SSH**, a secure connection to the hosting account. Your Mac proves who it is with a key file, so no password is stored anywhere. It doesn't use GitHub.
+
+### One-time setup
+
+1. **Turn on SSH.** In the GoDaddy dashboard, open the hosting plan's **Settings** and switch **SSH access** on. While you're there, note the **SSH host** (the domain or a server address) and the **username** (the cPanel username, `in9syw0613qk`).
+2. **Create a key on the Mac** (press Enter at each question to accept the defaults; a passphrase is optional):
+
+   ```sh
+   ssh-keygen -t ed25519 -C "sterlingbreeze1402 deploy"
+   cat ~/.ssh/id_ed25519.pub
+   ```
+3. **Give GoDaddy the public key.** In cPanel open **SSH Access** → **Manage SSH Keys** → **Import Key**. Name it `mac-deploy`, paste the line printed by `cat` into **Public Key** (leave Private Key empty), and click **Import**. Back in the key list, click **Manage** next to it and **Authorize**.
+4. **Test the connection:**
+
+   ```sh
+   ssh in9syw0613qk@<ssh-host>
+   ```
+
+   The first time, type `yes` to trust the server. You should get a command prompt on the server. Type `exit` to leave.
+5. **Find the site's folder** (its document root): in cPanel open **Domains** and read the **Document Root** next to the condo site's domain, for example `public_html` or `public_html/sterlingbreeze`.
+6. **Save the settings** by adding these lines to `.env.local` in the project folder. Create the file if it doesn't exist; it's never committed to Git.
+
+   ```sh
+   DEPLOY_HOST=<ssh-host>
+   DEPLOY_USER=in9syw0613qk
+   DEPLOY_PATH=public_html            # the document root from step 5, relative to the home folder
+   DEPLOY_SITE_URL=https://www.sterlingbreeze1402.com
+   # DEPLOY_PORT=22                   # only if GoDaddy shows a different SSH port
+   ```
+7. **Preview a first publish without uploading:** `npm run deploy -- --dry-run`.
+
+The settings file `sterlingbreeze1402-config.php` is never uploaded by this command. Set it up once by hand (see "One-time setup on GoDaddy").
+
+### What `npm run deploy` does
+
+1. **Stops if public files have uncommitted changes**, so the live site always matches what's in Git. Commit first (or use `--allow-dirty` to publish anyway).
+2. **Runs the tests.**
+3. **Builds the package** (`npm run package`). It stops if this changes `css/styles.css`, because that means the committed CSS was out of date. Commit the rebuilt file and run it again.
+4. **Checks the connection** and that the site's folder exists.
+5. **Uploads only changed files** into the site's folder, and lists each one.
+6. **Checks the live site:** the home page loads, and `/api/availability.php` returns a calendar where every booking says `Unavailable`. It never prints the calendar itself.
+
+| Command | Does |
+|---|---|
+| `npm run deploy` | Publish |
+| `npm run deploy -- --dry-run` | Show what would be uploaded, upload nothing |
+| `npm run deploy -- --prune` | Publish, and also delete files on the server that were removed from the project. Only inside `css`, `js`, `Images` and `api`, never other sites' folders. Try it with `--dry-run` first. |
+| `npm run deploy -- --allow-dirty` | Publish even with uncommitted changes |
+
+### Publish on every push
+
+To publish automatically whenever `main` is pushed:
+
+```sh
+npm run hooks:install      # turn on (once per computer / clone)
+npm run hooks:uninstall    # turn off
+```
+
+- It runs `npm run deploy` just before the push goes out. **If publishing fails, the push is cancelled**, so Git and the live site stay in step. Fix the problem and push again.
+- Pushing other branches never publishes.
+- To push once without publishing: `SKIP_DEPLOY=1 git push`.
+- This also works when pushing from VS Code; the publish output appears in its Git output panel.
+
+## Publishing by hand (File Manager)
+
+Use this if SSH isn't available.
 
 ### 1. Build the upload package (on the Mac)
 
@@ -195,7 +268,7 @@ Extracting replaces files but doesn't delete old ones. If a file or photo has be
 
 ## Updating content
 
-After any of these changes, publish again (build the package and upload it).
+After any of these changes, publish again (`npm run deploy`, or build the package and upload it by hand).
 
 | To change | Edit | Notes |
 |---|---|---|
@@ -232,3 +305,8 @@ Opening `index.html` by double-clicking it won't work: the scripts and calendar 
 | Odd redirects or errors only on this site, when other sites share `public_html` | An `.htaccess` file directly in `public_html` (from another site) also applies to subfolders | Check that file's rules, or ask GoDaddy support to exclude this site's folder. |
 | Photos missing on the live site, but fine on the Mac | Folder name case | It must be `Images` (capital I), not `images`. |
 | Old version still showing | Browser cache | Hard refresh (`Cmd+Shift+R`). |
+| `npm run deploy` says `Permission denied (publickey)` | The Mac's key isn't authorized on GoDaddy | Repeat step 3 of "Publishing from the Mac", including **Authorize**. Check that `DEPLOY_USER` is the cPanel username. |
+| `npm run deploy` says `Couldn't connect` or times out | SSH is off, or the host/port is wrong | Check that SSH access is on in the GoDaddy dashboard, and check `DEPLOY_HOST` / `DEPLOY_PORT` against what it shows. |
+| `npm run deploy` says `~/public_html/... doesn't exist` | `DEPLOY_PATH` doesn't match the document root | Copy the document root from cPanel **Domains**, without the `/home/<account>/` part. |
+| `rsync: command not found` from the server | The server has no rsync | Ask GoDaddy support, or publish by hand with File Manager. |
+| Push is refused after `pre-push: publishing the site` | Publishing failed, so the push was cancelled on purpose | Read the `deploy:` message above it, fix the problem, and push again (or `SKIP_DEPLOY=1 git push`). |

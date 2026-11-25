@@ -1,0 +1,25 @@
+#!/bin/sh
+# Publishes the site to GoDaddy (npm run deploy) whenever main is pushed.
+# Enable: npm run hooks:install    Disable: npm run hooks:uninstall
+# Push once without publishing: SKIP_DEPLOY=1 git push
+# If publishing fails, the push is cancelled, so Git and the live site stay in step.
+
+[ -n "$SKIP_DEPLOY" ] && exit 0
+
+zero=0000000000000000000000000000000000000000
+deploy=
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ] && [ "$local_sha" != "$zero" ]; then
+    deploy=$local_sha
+  fi
+done
+[ -z "$deploy" ] && exit 0
+
+if [ "$deploy" != "$(git rev-parse HEAD)" ]; then
+  echo "pre-push: main is being pushed but isn't checked out, so the site was NOT published." >&2
+  echo "          Check out main and run: npm run deploy" >&2
+  exit 0
+fi
+
+echo "pre-push: publishing the site (skip with SKIP_DEPLOY=1 git push)"
+npm run deploy --silent </dev/null
